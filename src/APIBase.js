@@ -14,9 +14,7 @@ class APIBase {
     this.timeOffset = 0
     this.timeOffsetLastSync = 0
 
-    if(this.useServerTimeOffset) {
-      this.getServerTimeOffset()
-    }
+    this.getServerTimeOffset()
   }
 
   getServerTimeOffset () {
