@@ -3,12 +3,13 @@ const { removeEmptyValue, buildQueryString, createRequest, defaultLogger } = req
 
 class APIBase {
   constructor (options) {
-    const { apiKey, apiSecret, baseURL, logger } = options
+    const { apiKey, apiSecret, baseURL, logger, useTimeOffset } = options
 
     this.apiKey = apiKey
     this.apiSecret = apiSecret
     this.baseURL = baseURL
     this.logger = logger || defaultLogger
+    this.useTimeOffset = useTimeOffset
   }
 
   publicRequest (method, path, params = {}) {
