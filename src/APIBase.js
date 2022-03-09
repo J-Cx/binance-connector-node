@@ -20,7 +20,7 @@ class APIBase {
   getServerTimeOffset () {
     if(this.useServerTimeOffset) {
       const now = +new Date()
-      if(!this.timeOffsetLastSync || now - this.timeOffsetLastSync >= 3000) {
+      if(!this.timeOffsetLastSync || now - this.timeOffsetLastSync >= 300000) {
         this.publicRequest("GET", "/api/v3/time")
         .then(res => this.timeOffset = res.data.serverTime - now)
         .then(_ => this.timeOffsetLastSync = now)
