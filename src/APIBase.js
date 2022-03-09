@@ -20,11 +20,13 @@ class APIBase {
   }
 
   getServerTimeOffset () {
-    const now = +new Date()
-    if(now - this.timeOffsetLastSync >= 300000) {
-      this.publicRequest("GET", "/api/v3/time")
+    if(this.useServerTimeOffset) {
+      const now = +new Date()
+      if(!this.timeOffsetLastSync || now - this.timeOffsetLastSync >= 3000) {
+        this.publicRequest("GET", "/api/v3/time")
         .then(res => this.timeOffset = res.data.serverTime - now)
         .then(_ => this.timeOffsetLastSync = now)
+      }
     }
   }
 
@@ -46,6 +48,7 @@ class APIBase {
     if(this.useServerTimeOffset && !this.timeOffsetLastSync) {
       throw new Error("server time offset sync not yet done")
     }
+    this.getServerTimeOffset()
     params = removeEmptyValue(params)
     const timestamp = Date.now() + this.timeOffset
     const queryString = buildQueryString({ ...params, timestamp })
