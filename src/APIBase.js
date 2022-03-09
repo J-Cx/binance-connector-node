@@ -3,13 +3,29 @@ const { removeEmptyValue, buildQueryString, createRequest, defaultLogger } = req
 
 class APIBase {
   constructor (options) {
-    const { apiKey, apiSecret, baseURL, logger, useTimeOffset } = options
+    const { apiKey, apiSecret, baseURL, logger, useServerTimeOffset } = options
 
     this.apiKey = apiKey
     this.apiSecret = apiSecret
     this.baseURL = baseURL
     this.logger = logger || defaultLogger
-    this.useTimeOffset = useTimeOffset
+    
+    this.useServerTimeOffset = useServerTimeOffset
+    this.timeOffset = 0
+    this.timeOffsetLastSync = 0
+
+    if(this.useServerTimeOffset) {
+      this.getServerTimeOffset()
+    }
+  }
+
+  getServerTimeOffset () {
+    const now = +new Date()
+    if(now - this.timeOffsetLastSync >= 300) {
+      this.publicRequest("GET", "/api/v3/time")
+        .then(res => this.timeOffset = res.data.serverTime - now)
+        .then(_ => this.timeOffsetLastSync = now)
+    }
   }
 
   publicRequest (method, path, params = {}) {
@@ -27,8 +43,11 @@ class APIBase {
   }
 
   signRequest (method, path, params = {}) {
+    if(this.useServerTimeOffset && !this.timeOffsetLastSync) {
+      throw new Error("server time offset sync not yet done")
+    }
     params = removeEmptyValue(params)
-    const timestamp = Date.now()
+    const timestamp = Date.now() + this.timeOffset
     const queryString = buildQueryString({ ...params, timestamp })
     const signature = crypto
       .createHmac('sha256', this.apiSecret)
