@@ -13,17 +13,34 @@ class APIBase {
     this.useServerTimeOffset = useServerTimeOffset
     this.timeOffset = 0
     this.timeOffsetLastSync = 0
+    this.timeOffsetFetchInProgress = false
 
     this.getServerTimeOffset()
   }
 
   getServerTimeOffset () {
     if(this.useServerTimeOffset) {
+      if(this.timeOffsetFetchInProgress) {
+        return
+      }
       const now = +new Date()
-      if(!this.timeOffsetLastSync || now - this.timeOffsetLastSync >= 300000) {
+      if(!this.timeOffsetLastSync || now - this.timeOffsetLastSync >= 30000) {
+        this.timeOffsetFetchInProgress = true
+        console.log("SYNC TIME OFFSET");
         this.publicRequest("GET", "/api/v3/time")
-        .then(res => this.timeOffset = res.data.serverTime - now)
-        .then(_ => this.timeOffsetLastSync = now)
+        .then(res => {
+          const innerNow = +new Date()
+          if(innerNow - now >= 1000) {
+            console.log(`FETCH TIME TOOK TOO LONG (${innerNow - now}), TRY AGAIN`)
+            this.timeOffsetFetchInProgress = false
+            this.getServerTimeOffset()
+          } else {
+            this.timeOffset = res.data.serverTime - now - Math.floor((innerNow - now) / 2)
+            this.timeOffsetLastSync = now
+            console.log(`USE OFFSET: ${this.timeOffset}`)
+            this.timeOffsetFetchInProgress = false
+          }
+        })
       }
     }
   }
