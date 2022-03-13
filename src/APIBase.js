@@ -24,7 +24,7 @@ class APIBase {
         return
       }
       const now = +new Date()
-      if(!this.timeOffsetLastSync || now - this.timeOffsetLastSync >= 30000) {
+      if(!this.timeOffsetLastSync || now - this.timeOffsetLastSync >= 60000) {
         this.timeOffsetFetchInProgress = true
         console.log("SYNC TIME OFFSET");
         this.publicRequest("GET", "/api/v3/time")
