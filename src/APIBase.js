@@ -26,18 +26,18 @@ class APIBase {
       const now = +new Date()
       if(!this.timeOffsetLastSync || now - this.timeOffsetLastSync >= 60000) {
         this.timeOffsetFetchInProgress = true
-        console.log("SYNC TIME OFFSET");
+        this.logger.log("SYNC TIME OFFSET");
         this.publicRequest("GET", "/api/v3/time")
         .then(res => {
           const innerNow = +new Date()
           if(innerNow - now >= 1000) {
-            console.log(`FETCH TIME TOOK TOO LONG (${innerNow - now}), TRY AGAIN`)
+            this.logger.log(`FETCH TIME TOOK TOO LONG (${innerNow - now}), TRY AGAIN`)
             this.timeOffsetFetchInProgress = false
             this.getServerTimeOffset()
           } else {
             this.timeOffset = res.data.serverTime - now - Math.floor((innerNow - now) / 2)
             this.timeOffsetLastSync = now
-            console.log(`USE OFFSET: ${this.timeOffset}`)
+            this.logger.log(`USE OFFSET: ${this.timeOffset}`)
             this.timeOffsetFetchInProgress = false
           }
         })
