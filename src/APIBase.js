@@ -41,7 +41,7 @@ class APIBase {
             this.timeOffsetFetchInProgress = false
           }
         })
-        .catch(error => this.logger.log(error))
+        .catch((error) => this.logger.log(error.response?.data))
         .finally(_ => this.timeOffsetFetchInProgress = false)
       }
     }
